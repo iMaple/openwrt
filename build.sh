@@ -14,6 +14,10 @@ make defconfig
 make menuconfig
 
 make download -j8 V=s
-make package/luci-app-passwall/compile V=99
+
+make package/luci-app-passwall/compile V=sc
 #make package/luci-app-passwall/{clean,compile} -j4
+
+chown -R 1000:1000 ./bin
+
 make package/index

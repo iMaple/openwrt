@@ -20,25 +20,13 @@ jobs:
       - name: Get current date
         id: date
         run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.date.outputs.date }}
-          release_name: ${{ steps.date.outputs.date }}
-          body: |
-            compile at ${{ steps.date.outputs.date }}
-          draft: false
-          prerelease: false
       - name: Upload Release Asset
         id: upload_release_asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist.zip
-          asset_name: dist.zip
-          asset_content_type: application/zip
+          body: compile at ${{ steps.date.outputs.date }}
+          draft: false
+          prerelease: false
+          files: dist.zip
+          name: ${{ steps.date.outputs.date }}
+          tag_name: v${{ steps.date.outputs.date }}
