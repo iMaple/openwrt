@@ -11,13 +11,14 @@ echo "src-git passwall_luci https://github.com/xiaorouji/openwrt-passwall.git;lu
 ./scripts/feeds install luci-app-passwall
 
 make defconfig
-make menuconfig
+#make menuconfig
 
-make download -j8 V=s
+#make download -j8 V=s
+make download -j8
 
 sudo chown -R 1000:1000 ./bin
 
-make package/luci-app-passwall/compile V=sc
-#make package/luci-app-passwall/{clean,compile} -j4
+#make package/luci-app-passwall/compile V=sc
+make package/luci-app-passwall/{clean,compile} -j$(nproc)
 
 make package/index
