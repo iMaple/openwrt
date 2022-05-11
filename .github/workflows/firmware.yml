@@ -1,0 +1,75 @@
+name: openwrt-firmware
+
+on:
+  schedule:
+    - cron: 0 0 * * 1
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: 构建OpenWrt
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: 签出
+        uses: actions/checkout@v3
+      - name: 准备环境
+        run: |
+          sudo apt update
+          sudo apt install build-essential gawk gcc-multilib flex git gettext libncurses5-dev libssl-dev python3-distutils zlib1g-dev
+          sudo timedatectl set-timezone "Asia/Shanghai"
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
+      - name: 检出openwrt源码
+        run: |
+          cd /workdir
+          git clone -b v21.02.3 https://git.openwrt.org/openwrt/openwrt.git openwrt
+          ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+      - name: 加载自定义feeds
+        run: |
+          cd openwrt
+      - name: 更新feeds
+        run: |
+          cd openwrt
+          ./scripts/feeds update -a
+      - name: 安装feeds
+        run: |
+          cd openwrt
+          ./scripts/feeds install -a
+      - name: 登陆ssh配置config
+        uses: P3TERX/ssh2actions@v1.0.0
+        env:
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      - name: 下载文件
+        run: |
+          cd openwrt
+          make -j$(($(nproc)+1)) defconfig download
+      - name: 开始编译
+        id: compile
+        run: |
+          cd openwrt
+          make world -j$(($(nproc)+1))
+          echo "::set-output name=status::success"
+      - name: 打包文件
+        id: zip
+        if: steps.compile.outputs.status == 'success'
+        run: |
+          zip -r openwrt.zip ./openwrt
+          echo "::set-output name=status::success"
+      - name: 生成release tag
+        id: tag
+        if: steps.zip.outputs.status == 'success'
+        run: |
+          echo "::set-output name=release_tag::$(date +'%Y-%m-%d')"
+      - name: 创建release
+        if: steps.tag.outputs.status == 'success'
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ steps.tag.outputs.release_tag }}
+          tag_name: v${{ steps.tag.outputs.release_tag }}
+          body: compile at ${{ steps.tag.outputs.release_tag }}
+          files: openwrt.zip
