@@ -3,9 +3,9 @@ name: openwrt-packages
 on:
   schedule:
     - cron: 0 0 * * 1
-  #push:
-  #  branches:
-  #    - main
+  push:
+    branches:
+      - main
 
 jobs:
   build:

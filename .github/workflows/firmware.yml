@@ -52,26 +52,21 @@ jobs:
       - name: 下载文件
         run: |
           cd openwrt
-          make -j$(($(nproc)+1)) defconfig download
+          make -j($nproc) defconfig download
       - name: 开始编译
         id: compile
         run: |
           cd openwrt
-          make world -j$(($(nproc)+1)) V=s
+          make -j($nproc)
           echo "::set-output name=status::success"
       - name: 打包文件
-        id: zip
         if: steps.compile.outputs.status == 'success'
         run: |
           zip -r openwrt.zip ./openwrt
-          echo "::set-output name=status::success"
       - name: 生成release tag
-        id: tag
-        if: steps.zip.outputs.status == 'success'
         run: |
           echo "::set-output name=release_tag::$(date +'%Y-%m-%d')"
       - name: 创建release
-        if: steps.tag.outputs.status == 'success'
         uses: softprops/action-gh-release@v1
         with:
           name: ${{ steps.tag.outputs.release_tag }}
