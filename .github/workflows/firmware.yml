@@ -52,12 +52,12 @@ jobs:
       - name: 下载文件
         run: |
           cd openwrt
-          make -j($nproc) defconfig download
+          make -j$(nproc) defconfig download
       - name: 开始编译
         id: compile
         run: |
           cd openwrt
-          make -j($nproc)
+          make -j$(nproc)
           echo "::set-output name=status::success"
       - name: 打包文件
         if: steps.compile.outputs.status == 'success'
