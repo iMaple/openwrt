@@ -19,7 +19,7 @@ jobs:
       - name: 准备环境
         run: |
           sudo apt update
-          sudo apt install build-essential gawk gcc-multilib flex git gettext libncurses5-dev libssl-dev python3-distutils zlib1g-dev
+          sudo apt install build-essential gawk gcc-multilib flex git gettext libncurses5-dev libssl-dev python3-distutils zlib1g-dev upx
           sudo timedatectl set-timezone "Asia/Shanghai"
           sudo mkdir -p /workdir
           sudo chown $USER:$GROUPS /workdir
@@ -28,9 +28,13 @@ jobs:
           cd /workdir
           git clone -b v21.02.3 https://git.openwrt.org/openwrt/openwrt.git openwrt
           ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+          ln -s /usr/bin/upx ./staging_dir/host/bin/
       - name: 加载自定义feeds
         run: |
           cd openwrt
+          echo "src-git passwall_packages https://github.com/xiaorouji/openwrt-passwall.git;packages" >> feeds.conf.default
+          echo "src-git passwall_luci https://github.com/xiaorouji/openwrt-passwall.git;luci" >> feeds.conf.default  
+          echo "src-git passwall2_luci https://github.com/xiaorouji/openwrt-passwall2.git" >> feeds.conf.default
       - name: 更新feeds
         run: |
           cd openwrt
@@ -52,7 +56,7 @@ jobs:
         id: compile
         run: |
           cd openwrt
-          make world -j$(($(nproc)+1))
+          make world -j$(($(nproc)+1)) V=s
           echo "::set-output name=status::success"
       - name: 打包文件
         id: zip
