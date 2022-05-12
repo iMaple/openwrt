@@ -22,5 +22,6 @@ sudo chown -R 1000:1000 ./bin
 
 #make package/luci-app-passwall/compile V=sc
 make package/luci-app-passwall/{clean,compile} -j$(nproc)
+make package/luci-app-passwall2/{clean,compile} -j$(nproc)
 
 make package/index
