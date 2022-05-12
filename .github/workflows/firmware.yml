@@ -3,9 +3,12 @@ name: openwrt-firmware
 on:
   schedule:
     - cron: 0 0 * * 1
-  #push:
-  #  branches:
-  #    - main
+  push:
+    branches:
+      - main
+
+env:
+  USE_SSH: false
 
 jobs:
   build:
@@ -44,7 +47,11 @@ jobs:
         run: |
           cd openwrt
           ./scripts/feeds install -a
+      - name: 加载自定义config
+        run: |
+          /bin/cp -f $GITHUB_WORKSPACE/.config $GITHUB_WORKSPACE/openwrt/.config
       - name: 登陆ssh配置config
+        if: env.USE_SSH == 'true'
         uses: P3TERX/ssh2actions@v1.0.0
         env:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
