@@ -1,11 +1,11 @@
 name: openwrt-firmware
 
 on:
-  schedule:
-    - cron: 0 0 * * 1
-  push:
-    branches:
-      - main
+  #schedule:
+  #  - cron: 0 0 * * 1
+  #push:
+  #  branches:
+  #    - main
 
 env:
   USE_SSH: false
